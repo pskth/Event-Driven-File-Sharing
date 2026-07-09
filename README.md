@@ -51,7 +51,10 @@ Event-Driven Automated Cleanup: When the TTL timer hits zero, the database autom
 | **Paying for Idle Time**       | **Serverless Compute:** You won't be setting up a traditional server that runs 24/7. Instead, you'll use AWS services (like AWS Lambda) that only "wake up" and run code when a user actually requests or uploads a file.                                                                 |
 | **Manual Polling for Cleanup** | **Event-Driven Automation:** You will set a "TTL" (a countdown timer) on that database record. When the timer hits zero, the database deletes the record automatically. This deletion acts as an event that triggers another piece of code to permanently delete the actual file from S3. |
 
-![Architecture](tradi.png)
+TRADITIONAL
+![Architecture](traditional.png)
+
+OPTIMAL
 ![Architecture](arch.png)
 
 ## Acceptance Criteria
