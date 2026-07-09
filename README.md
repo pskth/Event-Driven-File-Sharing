@@ -1,5 +1,7 @@
 # Secure Event-Driven File Sharing System
+The project is a system that allows users to securely share files using temporary web links that automatically self-destruct—along with the files themselves—after a specific amount of time passes.
 
+Imagine a user wants to send massive 2GB video files to friends, which are too large for standard email attachments. In a traditional, naive approach, the user would send the massive file payload directly to a constantly running web server. The server would have to hold that massive file in its own memory and process it before explicitly forwarding it to a storage drive, creating a severe bottleneck that could crash the system if multiple users uploaded heavy files simultaneously. Furthermore, developers would have to write custom scripts, like cron jobs, to manually scan the database and delete old files every hour.
 ## User Stories
 
 ### 1. Secure Client Document Drops (Legal & Financial)
@@ -29,6 +31,18 @@ In a traditional, naive approach, developers build a web server that runs consta
 The modern architecture flips this model on its head by completely removing the middleman server and letting AWS handle the heavy lifting automatically.
 When a user wants to share a file, they talk to a serverless "gatekeeper" (an AWS Lambda function). This function generates a temporary S3 Presigned URL and gives it to the user. The user then uploads the heavy file _directly_ to the Amazon S3 storage bucket using that link, completely bypassing the compute layer. Concurrently, the system logs the file's lightweight metadata into a DynamoDB table and sets a Time-to-Live (TTL) expiration timer. When the timer hits zero, the database automatically deletes the record. This deletion acts as an event that triggers another serverless function to permanently wipe the actual file from S3.
 
+## How It Works (The Workflow)
+
+Secure Access (The Gatekeeper): When a user wants to upload or download a file, they do not talk to the storage system directly. Instead, they interact with a serverless "gatekeeper" (an AWS Lambda function) that checks their permissions and generates a temporary "pass" called an S3 Presigned URL.
+
+
+Direct File Transfers: Using the temporary Presigned URL, the user uploads or downloads the heavy file directly to or from an Amazon S3 storage bucket. This completely bypasses the Lambda function's memory, preventing the compute layer from becoming overwhelmed by large files.
+
+
+Metadata Tracking: While S3 holds the physical files, an Amazon DynamoDB database acts as a "metadata persistence layer". It stores a lightweight index card about the file, which includes the file's name, its S3 link, and a Time-to-Live (TTL) countdown timer.
+
+
+Event-Driven Automated Cleanup: When the TTL timer hits zero, the database automatically deletes the file's record. This deletion acts as an "event" that triggers a separate Lambda function to reach into the S3 bucket and permanently wipe the actual file.
 ### Comparison
 
 | Problem in Naive Approach      | How Your System Solves It                                                                                                                                                                                                                                                                 |
@@ -37,6 +51,7 @@ When a user wants to share a file, they talk to a serverless "gatekeeper" (an AW
 | **Paying for Idle Time**       | **Serverless Compute:** You won't be setting up a traditional server that runs 24/7. Instead, you'll use AWS services (like AWS Lambda) that only "wake up" and run code when a user actually requests or uploads a file.                                                                 |
 | **Manual Polling for Cleanup** | **Event-Driven Automation:** You will set a "TTL" (a countdown timer) on that database record. When the timer hits zero, the database deletes the record automatically. This deletion acts as an event that triggers another piece of code to permanently delete the actual file from S3. |
 
+![Architecture](tradi.png)
 ![Architecture](arch.png)
 
 ## Acceptance Criteria
