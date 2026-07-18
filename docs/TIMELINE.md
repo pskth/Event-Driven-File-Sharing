@@ -170,3 +170,13 @@ I compared various alternative tools present in AWS that can be used.
 - Restrict uploads to specific file types (e.g., only PDFs or images) to prevent malicious scripts from entering the system.
 - Set a maximum file size limit (e.g., 2GB) on the generated S3 Presigned URL to prevent users from uploading files that are too large.
 - Generate a single temporary link that allows a user to upload multiple files into a grouped folder.
+
+---
+
+## Meeting Points
+
+Start with Uploading User, next receiving user
+Specify the limitation like specific file type, max size, etc
+Use minio for S3
+
+---
