@@ -175,8 +175,8 @@ I compared various alternative tools present in AWS that can be used.
 
 ## Meeting Points
 
-Start with Uploading User, next receiving user
-Specify the limitation like specific file type, max size, etc
-Use minio for S3
+- Start with Uploading User, next receiving user
+- Specify the limitation like specific file type, max size, etc
+- Use minio for S3
 
 ---
