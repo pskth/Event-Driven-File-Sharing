@@ -1,0 +1,30 @@
+# -----------------------------
+# LocalStack / Docker State
+# -----------------------------
+localstack_data/
+.localstack/
+
+# -----------------------------
+# Python / Lambda Dependencies
+# -----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.pytest_cache/
+
+# -----------------------------
+# Secrets & Environment Variables
+# -----------------------------
+.env
+.env.local
+.env.*
+
+# -----------------------------
+# OS Generated Files
+# -----------------------------
+.DS_Store
+.DS_Store?
+Thumbs.db
