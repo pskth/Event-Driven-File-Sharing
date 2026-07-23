@@ -179,3 +179,14 @@ I compared various alternative tools present in AWS that can be used.
 - Specify the limitation like specific file type, max size, etc
 
 ---
+
+---
+
+### Thursday, 23 July
+
+## Meeting Points
+
+- if S3 or DynamoDB or Lambda fails, other components have to recognise it and either revert action or dont do the intended action.
+- It is called two-phase commit.
+
+---
