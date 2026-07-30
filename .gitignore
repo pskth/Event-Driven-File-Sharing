@@ -28,3 +28,5 @@ env/
 .DS_Store
 .DS_Store?
 Thumbs.db
+
+awslocal lambda invoke.txt
