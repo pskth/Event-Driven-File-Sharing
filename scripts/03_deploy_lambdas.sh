@@ -42,7 +42,13 @@ aws --endpoint-url=$ENDPOINT lambda create-function \
     --zip-file fileb://src/automated_cleanup/function.zip \
     --environment Variables="{BUCKET_NAME=secure-file-share-bucket}" > /dev/null
 
-# 5. Map DynamoDB Stream to Cleanup Lambda
+# 5. Ensure TTL is enabled on the table (survives restarts)
+echo "Ensuring TTL is enabled on file-meta-data..."
+aws --endpoint-url=$ENDPOINT dynamodb update-time-to-live \
+    --table-name file-meta-data \
+    --time-to-live-specification "Enabled=true, AttributeName=expires_at" > /dev/null
+
+# 6. Map DynamoDB Stream to Cleanup Lambda
 echo "Mapping DynamoDB Stream to Cleanup Lambda..."
 STREAM_ARN=$(aws --endpoint-url=$ENDPOINT dynamodb describe-table --table-name file-meta-data --query "Table.LatestStreamArn" --output text)
 
