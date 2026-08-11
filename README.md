@@ -1,6 +1,6 @@
   # Secure Event-Driven File Sharing System
   
-  The project is a system that allows users to securely share files using temporary web links that automatically self-destruct—along with the files themselves—after a specific amount of time passes.
+  The project is a system that allows users to securely share files using temporary web links that automatically self-destruct-along with the files themselves-after a specific amount of time passes.
   
   Imagine a user wants to send massive 2GB video files to friends, which are too large for standard email attachments. In a traditional, naive approach, the user would send the massive file payload directly to a constantly running web server. The server would have to hold that massive file in its own memory and process it before explicitly forwarding it to a storage drive, creating a severe bottleneck that could crash the system if multiple users uploaded heavy files simultaneously. Furthermore, developers would have to write custom scripts, like cron jobs, to manually scan the database and delete old files every hour.
   
