@@ -9,11 +9,24 @@
 #   upload via curl can be any local file. Here we create top_secret.txt so
 #   the label and the local file match for clarity.
 # ==============================================================================
+if [ -f .env ]; then
+    set -a            # automatically export all variables
+    source .env       # read the .env file
+    set +a            # stop automatically exporting
+else
+    echo "Warning: .env file not found"
+fi
+# ==============================================================================
 
-export AWS_ACCESS_KEY_ID="test"
-export AWS_SECRET_ACCESS_KEY="test"
-export AWS_DEFAULT_REGION="us-east-1"
-ENDPOINT="http://localhost:4566"
+# Load configuration from .env file
+if [ -f .env ]; then
+    set -a            # Automatically export all variables
+    source .env       # Read the .env file
+    set +a            # Stop automatically exporting
+else
+    echo "Error: .env file not found. Please create one with AWS credentials and ENDPOINT."
+    exit 1
+fi
 
 # --- Create the file we are going to upload -----------------------------------
 echo "TOP SECRET: Launch codes 1-2-3-4-5" > top_secret.txt
@@ -60,12 +73,12 @@ echo "Upload done."
 
 echo ""
 echo "=> Confirming file is in S3:"
-aws --endpoint-url=$ENDPOINT s3 ls s3://secure-file-share-bucket/uploads/$FILE_ID
+aws --endpoint-url=$ENDPOINT s3 ls s3://$BUCKET_NAME/uploads/$FILE_ID
 
 echo ""
 echo "=> Confirming record is ACTIVE in DynamoDB:"
 aws --endpoint-url=$ENDPOINT dynamodb get-item \
-  --table-name file-meta-data \
+  --table-name $TABLE_NAME \
   --key "{\"file_id\": {\"S\": \"$FILE_ID\"}}" \
   --output json \
   | jq '.Item | {file_id: .file_id.S, filename: .filename.S, status: .status.S, expires_at: .expires_at.N}'
@@ -88,7 +101,7 @@ curl -s -X DELETE http://localhost:4566/_aws/dynamodb/expired | jq .
 echo ""
 echo "=> Confirming DynamoDB record was deleted by the TTL sweep:"
 DB_OUT=$(aws --endpoint-url=$ENDPOINT dynamodb get-item \
-  --table-name file-meta-data \
+  --table-name $TABLE_NAME \
   --key "{\"file_id\": {\"S\": \"$FILE_ID\"}}" \
   --output json 2>/dev/null | jq '.Item' 2>/dev/null)
 
@@ -104,7 +117,7 @@ echo "   Waiting 5 seconds for Stream -> Lambda -> S3 deletion chain..."
 sleep 5
 
 DELETED=0
-S3_OUT=$(aws --endpoint-url=$ENDPOINT s3 ls s3://secure-file-share-bucket/uploads/$FILE_ID 2>/dev/null || true)
+S3_OUT=$(aws --endpoint-url=$ENDPOINT s3 ls s3://$BUCKET_NAME/uploads/$FILE_ID 2>/dev/null || true)
 if [[ -z "$S3_OUT" ]]; then
     echo ""
     echo "SUCCESS! The full chain worked:"
@@ -115,7 +128,7 @@ else
     echo "   S3 file not yet gone. Polling for 20 more seconds..."
     for i in {1..4}; do
         sleep 5
-        S3_OUT=$(aws --endpoint-url=$ENDPOINT s3 ls s3://secure-file-share-bucket/uploads/$FILE_ID 2>/dev/null || true)
+        S3_OUT=$(aws --endpoint-url=$ENDPOINT s3 ls s3://$BUCKET_NAME/uploads/$FILE_ID 2>/dev/null || true)
         if [[ -z "$S3_OUT" ]]; then
             echo "SUCCESS! File deleted from S3!"
             DELETED=1

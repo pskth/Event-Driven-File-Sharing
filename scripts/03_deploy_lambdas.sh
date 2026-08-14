@@ -1,10 +1,16 @@
 #!/bin/bash
 set -e
 
-export AWS_ACCESS_KEY_ID="test"
-export AWS_SECRET_ACCESS_KEY="test"
-export AWS_DEFAULT_REGION="us-east-1"
-ENDPOINT="http://localhost:4566"
+# Load configuration from .env file
+ENV_FILE="$(dirname "$0")/../.env"
+if [ -f "$ENV_FILE" ]; then
+    set -a
+    source "$ENV_FILE"
+    set +a
+else
+    echo "Error: .env file not found at $ENV_FILE"
+    exit 1
+fi
 
 echo "=== Deploying Lambdas to LocalStack ==="
 
@@ -23,7 +29,7 @@ aws --endpoint-url=$ENDPOINT lambda create-function \
     --handler app.lambda_handler \
     --role arn:aws:iam::000000000000:role/dummy-role \
     --zip-file fileb://src/gatekeeper_api/function.zip \
-    --environment Variables="{BUCKET_NAME=secure-file-share-bucket,TABLE_NAME=file-meta-data}" > /dev/null
+    --environment Variables="{BUCKET_NAME=$BUCKET_NAME,TABLE_NAME=$TABLE_NAME}" > /dev/null
 
 # 3. Zip Cleanup
 echo "Zipping Automated Cleanup..."
@@ -40,17 +46,17 @@ aws --endpoint-url=$ENDPOINT lambda create-function \
     --handler app.lambda_handler \
     --role arn:aws:iam::000000000000:role/dummy-role \
     --zip-file fileb://src/automated_cleanup/function.zip \
-    --environment Variables="{BUCKET_NAME=secure-file-share-bucket}" > /dev/null
+    --environment Variables="{BUCKET_NAME=$BUCKET_NAME}" > /dev/null
 
 # 5. Ensure TTL is enabled on the table (survives restarts)
-echo "Ensuring TTL is enabled on file-meta-data..."
+echo "Ensuring TTL is enabled on $TABLE_NAME..."
 aws --endpoint-url=$ENDPOINT dynamodb update-time-to-live \
-    --table-name file-meta-data \
+    --table-name "$TABLE_NAME" \
     --time-to-live-specification "Enabled=true, AttributeName=expires_at" > /dev/null
 
 # 6. Map DynamoDB Stream to Cleanup Lambda
 echo "Mapping DynamoDB Stream to Cleanup Lambda..."
-STREAM_ARN=$(aws --endpoint-url=$ENDPOINT dynamodb describe-table --table-name file-meta-data --query "Table.LatestStreamArn" --output text)
+STREAM_ARN=$(aws --endpoint-url=$ENDPOINT dynamodb describe-table --table-name "$TABLE_NAME" --query "Table.LatestStreamArn" --output text)
 
 aws --endpoint-url=$ENDPOINT lambda create-event-source-mapping \
     --function-name automated-cleanup-function \
