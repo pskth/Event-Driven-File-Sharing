@@ -48,19 +48,36 @@ aws --endpoint-url=$ENDPOINT lambda create-function \
     --zip-file fileb://src/automated_cleanup/function.zip \
     --environment Variables="{BUCKET_NAME=$BUCKET_NAME}" > /dev/null
 
-# 5. Ensure TTL is enabled on the table (survives restarts)
+# 5. Zip Download Handler
+echo "Zipping Download Handler..."
+cd src/download_handler
+zip -r function.zip app.py > /dev/null
+cd ../..
+
+# 6. Deploy Download Handler
+echo "Deploying download-handler-function..."
+aws --endpoint-url=$ENDPOINT lambda delete-function --function-name download-handler-function 2>/dev/null || true
+aws --endpoint-url=$ENDPOINT lambda create-function \
+    --function-name download-handler-function \
+    --runtime python3.9 \
+    --handler app.lambda_handler \
+    --role arn:aws:iam::000000000000:role/dummy-role \
+    --zip-file fileb://src/download_handler/function.zip \
+    --environment Variables="{BUCKET_NAME=$BUCKET_NAME,TABLE_NAME=$TABLE_NAME}" > /dev/null
+
+# 7. Ensure TTL is enabled on the table (survives restarts)
 echo "Ensuring TTL is enabled on $TABLE_NAME..."
 aws --endpoint-url=$ENDPOINT dynamodb update-time-to-live \
     --table-name "$TABLE_NAME" \
     --time-to-live-specification "Enabled=true, AttributeName=expires_at" > /dev/null
 
-# 6. Map DynamoDB Stream to Cleanup Lambda
+# 8. Map DynamoDB Stream to Cleanup Lambda
 echo "Mapping DynamoDB Stream to Cleanup Lambda..."
 STREAM_ARN=$(aws --endpoint-url=$ENDPOINT dynamodb describe-table --table-name "$TABLE_NAME" --query "Table.LatestStreamArn" --output text)
 
 aws --endpoint-url=$ENDPOINT lambda create-event-source-mapping \
     --function-name automated-cleanup-function \
     --event-source-arn $STREAM_ARN \
-    --starting-position LATEST > /dev/null
+    --starting-position LATEST > /dev/null 2>&1 || echo "Event source mapping already exists — continuing."
 
 echo "=== Deployment Complete ==="

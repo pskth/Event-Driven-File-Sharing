@@ -1,7 +1,7 @@
 import json
 import os
+import secrets
 import time
-import uuid
 
 import boto3
 from botocore.exceptions import ClientError
@@ -19,6 +19,23 @@ dynamodb = boto3.resource("dynamodb", endpoint_url=endpoint_url)
 BUCKET_NAME = os.environ.get("BUCKET_NAME") or "secure-file-share-bucket"
 TABLE_NAME = os.environ.get("TABLE_NAME") or "file-meta-data"
 table = dynamodb.Table(TABLE_NAME)  # type: ignore
+
+# Alphabet excludes visually ambiguous characters (0/O, 1/I/L) so codes are
+# easy to read aloud and type by hand.
+SHARE_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+SHARE_CODE_LENGTH = 8
+
+
+def _generate_share_code() -> str:
+    """
+    Generates a short, human-typeable share code (e.g. "K4J9XQP2").
+
+    This code doubles as BOTH the DynamoDB partition key (file_id) AND the
+    S3 object key suffix — there is no separate lookup index. See
+    docs/WEB_APP_DESIGN_DECISIONS.md for the collision-risk tradeoff
+    analysis behind this choice.
+    """
+    return "".join(secrets.choice(SHARE_CODE_ALPHABET) for _ in range(SHARE_CODE_LENGTH))
 
 
 def _rollback_pending_record(file_id: str) -> None:
@@ -60,7 +77,7 @@ def lambda_handler(event, context):
     If any step fails, a compensating transaction deletes the PENDING record
     so no orphaned metadata or untracked files are left behind.
     """
-    file_id = str(uuid.uuid4())
+    file_id = _generate_share_code()
 
     try:
         # ── Parse request ──────────────────────────────────────────────────

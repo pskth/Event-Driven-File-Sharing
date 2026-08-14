@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureShare — Share files. Securely. Temporarily.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="ambient-field" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="logo-lockup">
+      <span class="logo-mark" aria-hidden="true"></span>
+      <span class="logo-word">SecureShare</span>
+    </div>
+    <nav class="tab-nav">
+      <button class="tab-link is-active" data-tab="send" type="button">Send</button>
+      <button class="tab-link" data-tab="receive" type="button">Receive</button>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <!-- SEND PANEL -->
+    <section id="panel-send" class="panel is-active">
+      <div class="headline-block">
+        <p class="eyebrow">Encrypted. Ephemeral. Effortless.</p>
+        <h1 class="headline">Share files.<br>Securely.<br>Temporarily.</h1>
+        <p class="body-copy">Pick a file, choose how long it should live, and get a short code to hand to anyone. When time's up, it's gone — for good.</p>
+      </div>
+
+      <form id="upload-form" class="form-block">
+        <label id="dropzone" class="dropzone" for="file-input">
+          <span id="dropzone-label">Drop a file here, or click to browse</span>
+          <span id="dropzone-filename" class="dropzone-filename"></span>
+        </label>
+        <input type="file" id="file-input" hidden />
+
+        <div class="field-row">
+          <label class="field-label" for="expiration-select">Expires after</label>
+          <select id="expiration-select" class="field-select">
+            <option value="60">1 minute (testing)</option>
+            <option value="300" selected>5 minutes</option>
+            <option value="900">15 minutes</option>
+            <option value="3600">1 hour</option>
+            <option value="86400">24 hours</option>
+          </select>
+        </div>
+
+        <button type="submit" id="upload-button" class="btn-primary">Generate Secure Link</button>
+      </form>
+
+      <div id="upload-progress" class="progress-track hidden">
+        <div id="upload-progress-bar" class="progress-fill"></div>
+      </div>
+
+      <div id="upload-result" class="result-block hidden">
+        <p class="eyebrow">Your share code</p>
+        <p id="share-code" class="share-code"></p>
+        <button id="copy-code-button" class="btn-ghost" type="button">Copy code</button>
+        <p id="upload-countdown" class="countdown"></p>
+      </div>
+
+      <p id="upload-error" class="error-text hidden"></p>
+    </section>
+
+    <!-- RECEIVE PANEL -->
+    <section id="panel-receive" class="panel">
+      <div class="headline-block">
+        <p class="eyebrow">Got a code?</p>
+        <h1 class="headline">Receive a file.</h1>
+        <p class="body-copy">Enter the share code you were given. If it's still valid, your download starts immediately.</p>
+      </div>
+
+      <form id="download-form" class="form-block">
+        <input type="text" id="code-input" class="code-input" placeholder="XXXXXXXX" maxlength="8" autocomplete="off" autocapitalize="characters" />
+        <button type="submit" id="download-button" class="btn-primary">Download File</button>
+      </form>
+
+      <p id="download-status" class="status-text hidden"></p>
+      <p id="download-error" class="error-text hidden"></p>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
