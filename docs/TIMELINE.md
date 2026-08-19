@@ -190,3 +190,8 @@ I compared various alternative tools present in AWS that can be used.
 - It is called two-phase commit.
 
 ---
+---
+### Friday, 14 Aug
+## Meeting Points
+- check uploading video files in various browsers.
+---
