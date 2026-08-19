@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SecureShare — Share files. Securely. Temporarily.</title>
+  <title>SecureShare — Secure file handoffs</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="ambient-field" aria-hidden="true"></div>
 
   <header class="topbar">
-    <div class="logo-lockup">
-      <span class="logo-mark" aria-hidden="true"></span>
+    <div class="logo-lockup" aria-label="SecureShare home">
+      <span class="logo-mark" aria-hidden="true">S</span>
       <span class="logo-word">SecureShare</span>
     </div>
     <nav class="tab-nav">
@@ -24,16 +24,21 @@
   </header>
 
   <main class="stage">
+    <aside class="side-note" aria-hidden="true">
+      <span>Encrypted handoffs</span>
+      <span>Files expire automatically</span>
+    </aside>
     <!-- SEND PANEL -->
     <section id="panel-send" class="panel is-active">
       <div class="headline-block">
-        <p class="eyebrow">Encrypted. Ephemeral. Effortless.</p>
-        <h1 class="headline">Share files.<br>Securely.<br>Temporarily.</h1>
+        <p class="eyebrow"><span>01</span> Send it safely</p>
+        <h1 class="headline">Share files.<br><em>Securely.</em><br>Temporarily.</h1>
         <p class="body-copy">Pick a file, choose how long it should live, and get a short code to hand to anyone. When time's up, it's gone — for good.</p>
       </div>
 
       <form id="upload-form" class="form-block">
         <label id="dropzone" class="dropzone" for="file-input">
+          <span class="dropzone-icon" aria-hidden="true">↥</span>
           <span id="dropzone-label">Drop a file here, or click to browse</span>
           <span id="dropzone-filename" class="dropzone-filename"></span>
         </label>
@@ -58,7 +63,7 @@
       </div>
 
       <div id="upload-result" class="result-block hidden">
-        <p class="eyebrow">Your share code</p>
+        <p class="eyebrow"><span>02</span> Your share code</p>
         <p id="share-code" class="share-code"></p>
         <button id="copy-code-button" class="btn-ghost" type="button">Copy code</button>
         <p id="upload-countdown" class="countdown"></p>
@@ -70,8 +75,8 @@
     <!-- RECEIVE PANEL -->
     <section id="panel-receive" class="panel">
       <div class="headline-block">
-        <p class="eyebrow">Got a code?</p>
-        <h1 class="headline">Receive a file.</h1>
+        <p class="eyebrow"><span>01</span> Got a code?</p>
+        <h1 class="headline">Receive<br>a <em>file.</em></h1>
         <p class="body-copy">Enter the share code you were given. If it's still valid, your download starts immediately.</p>
       </div>
 
